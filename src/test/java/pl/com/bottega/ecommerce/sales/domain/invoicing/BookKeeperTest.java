@@ -94,8 +94,34 @@ class BookKeeperTest {
 
         Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
 
-        assertThat(invoiceResult.getClient().getName(), org.hamcrest.Matchers.is(client.getName()));
+        assertThat(invoiceResult.getClient().getName(), is(client.getName()));
         assertThat(invoiceResult.getClient().getAggregateId().getId(), is(id.getId()));
+    }
+
+    @Test
+    public void testShouldReturnFoodAsProductTypeOfThirdItem() {
+        Id id = Id.generate();
+        ClientData client = new ClientData(id, "Magda");
+        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+
+        TaxPolicy taxPolicy = mock(TaxPolicy.class);
+        when(taxPolicy.calculateTax(ProductType.FOOD, new Money(10) )).thenReturn(new Tax(new Money(10), "5%" ));
+
+        ProductData productData = mock(ProductData.class);
+        when(productData.getType()).thenReturn(ProductType.FOOD);
+
+        RequestItem requestItem1 = new RequestItem(productData, 5, new Money(10));
+        RequestItem requestItem2 = new RequestItem(productData, 5, new Money(10));
+        RequestItem requestItem3 = new RequestItem(productData, 5, new Money(10));
+
+        invoiceRequest.add(requestItem1);
+        invoiceRequest.add(requestItem2);
+        invoiceRequest.add(requestItem3);
+
+        Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
+
+        assertThat(invoiceResult.getItems().get(2).getProduct().getType(), is(ProductType.FOOD));
     }
 
 }
