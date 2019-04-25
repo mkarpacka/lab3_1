@@ -79,4 +79,23 @@ class BookKeeperTest {
         Assert.assertThat(invoiceResult.getItems().size(),is(0));
     }
 
+    @Test
+    public void testShouldReturnProperInformation() {
+        Id id = Id.generate();
+        ClientData client = new ClientData(id, "Magda");
+        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+
+        TaxPolicy taxPolicy = mock(TaxPolicy.class);
+        when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
+
+        ProductData productData = mock(ProductData.class);
+        when(productData.getType()).thenReturn(ProductType.DRUG);
+
+        Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
+
+        assertThat(invoiceResult.getClient().getName(), org.hamcrest.Matchers.is(client.getName()));
+        assertThat(invoiceResult.getClient().getAggregateId().getId(), is(id.getId()));
+    }
+
 }
