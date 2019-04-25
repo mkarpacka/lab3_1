@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.is;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class BookKeeperTest {
 
@@ -35,5 +36,26 @@ class BookKeeperTest {
         Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
 
         assertThat(invoiceResult.getItems().size(), is(1));
+    }
+
+    @Test public void testCalculateTaxShouldBeCalledTwoTimes() {
+        Id id = new Id("2");
+        ClientData client = new ClientData(id, "Magda");
+        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+
+        TaxPolicy taxPolicy = mock(TaxPolicy.class);
+        when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
+
+        ProductData productData = mock(ProductData.class);
+        when(productData.getType()).thenReturn(ProductType.DRUG);
+
+        RequestItem requestItem = new RequestItem(productData, 5, new Money(10));
+        invoiceRequest.add(requestItem);
+        invoiceRequest.add(requestItem);
+
+        bookKeeper.issuance(invoiceRequest, taxPolicy);
+
+        verify(taxPolicy, times(2)).calculateTax(ProductType.DRUG, new Money(10));
     }
 }
