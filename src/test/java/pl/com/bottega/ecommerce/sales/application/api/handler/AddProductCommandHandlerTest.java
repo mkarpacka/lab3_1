@@ -78,6 +78,11 @@ public class AddProductCommandHandlerTest {
 
     }
 
+    @Test
+    public void testProductIsAvailableShouldBeCalledZeroTimes() {
+        verify(product, times(0)).isAvailable();
+    }
+
 
 
 }
