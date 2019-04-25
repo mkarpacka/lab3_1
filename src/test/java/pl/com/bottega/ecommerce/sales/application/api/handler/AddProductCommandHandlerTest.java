@@ -71,6 +71,13 @@ public class AddProductCommandHandlerTest {
 
     }
 
+    @Test
+    public void testProductIsAvailableShouldReturnTrue(){
+
+        Assert.assertTrue(product.isAvailable());
+
+    }
+
 
 
 }
