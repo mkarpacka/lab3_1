@@ -83,6 +83,21 @@ public class AddProductCommandHandlerTest {
         verify(product, times(0)).isAvailable();
     }
 
+    @Test
+    public void testProductIsAvailableShouldBeCalledFourTimes(){
+
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+
+        verify(product,times(4)).isAvailable();
+
+    }
+
+
+
+
 
 
 }
