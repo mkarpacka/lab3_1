@@ -124,4 +124,21 @@ class BookKeeperTest {
         assertThat(invoiceResult.getItems().get(2).getProduct().getType(), is(ProductType.FOOD));
     }
 
+    @Test public void testCalculateTaxBeCalledZeroTimes() {
+        Id id = Id.generate();
+        ClientData client = new ClientData(id, "Magda");
+        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+
+        TaxPolicy taxPolicy = mock(TaxPolicy.class);
+        when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
+
+        ProductData productData = mock(ProductData.class);
+        when(productData.getType()).thenReturn(ProductType.DRUG);
+
+        bookKeeper.issuance(invoiceRequest, taxPolicy);
+
+        verify(taxPolicy, times(0)).calculateTax(ProductType.DRUG, new Money(10));
+    }
+
 }
