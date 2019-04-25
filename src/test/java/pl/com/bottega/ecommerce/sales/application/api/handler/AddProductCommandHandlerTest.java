@@ -37,7 +37,7 @@ public class AddProductCommandHandlerTest {
     @Before
     public void setup() {
 
-        addProductCommand = new AddProductCommand(new Id("1"), new Id("2"), 5);
+        addProductCommand = new AddProductCommand(new Id("1"), new Id("1"), 5);
 
         reservation = mock(Reservation.class);
 
@@ -48,7 +48,7 @@ public class AddProductCommandHandlerTest {
         when(product.isAvailable()).thenReturn(true);
 
         productRepository = mock(ProductRepository.class);
-        when(productRepository.load(any())).thenReturn(product);
+        when(productRepository.load(new Id("1"))).thenReturn(product);
 
         systemContext = mock(SystemContext.class);
 
@@ -57,6 +57,18 @@ public class AddProductCommandHandlerTest {
 
         addProductCommandHandler = new AddProductCommandHandler(reservationRepository, productRepository, suggestionService,
                 clientRepository, systemContext);
+    }
+
+    @Test
+    public void testProductRepositoryLoadShouldBeCalledTwoTimes(){
+
+        addProductCommandHandler.handle(addProductCommand);
+        addProductCommandHandler.handle(addProductCommand);
+
+        when(reservationRepository.load(new Id("1"))).thenReturn(reservation);
+
+        verify(productRepository,times(2)).load(new Id("1"));
+
     }
 
 
