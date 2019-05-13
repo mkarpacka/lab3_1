@@ -1,6 +1,8 @@
 package pl.com.bottega.ecommerce.sales.domain.invoicing;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
@@ -17,42 +19,44 @@ import static org.mockito.Mockito.*;
 
 class BookKeeperTest {
 
+    private Id id;
+    private ClientData client;
+    private InvoiceRequest invoiceRequest;
+    private BookKeeper bookKeeper;
+    private TaxPolicy taxPolicy;
+    private ProductData productData;
+    private RequestItem requestItem;
+    private Invoice invoiceResult;
 
-    @Test
-    void testInvoiceRequestWithOneElementReturnOneElementInvoice() {
-        Id id = Id.generate();
-        ClientData client = new ClientData(id, "Magda");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+    @BeforeEach
+    public void setup() {
+        id = Id.generate();
+        client = new ClientData(id, "Magda");
+        invoiceRequest = new InvoiceRequest(client);
+        bookKeeper = new BookKeeper(new InvoiceFactory());
 
-        TaxPolicy taxPolicy = mock(TaxPolicy.class);
+        taxPolicy = mock(TaxPolicy.class);
         when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
 
-        ProductData productData = mock(ProductData.class);
+        productData = mock(ProductData.class);
         when(productData.getType()).thenReturn(ProductType.DRUG);
 
-        RequestItem requestItem = new RequestItem(productData, 5, new Money(10));
+        requestItem = new RequestItem(productData, 5, new Money(10));
+    }
+
+    @Test
+    public void testInvoiceRequestWithOneElementReturnOneElementInvoice() {
+
         invoiceRequest.add(requestItem);
 
-        Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
 
         assertThat(invoiceResult.getItems().size(), is(1));
     }
 
     @Test
     public void testCalculateTaxShouldBeCalledTwoTimes() {
-        Id id = new Id("2");
-        ClientData client = new ClientData(id, "Magda");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
 
-        TaxPolicy taxPolicy = mock(TaxPolicy.class);
-        when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
-
-        ProductData productData = mock(ProductData.class);
-        when(productData.getType()).thenReturn(ProductType.DRUG);
-
-        RequestItem requestItem = new RequestItem(productData, 5, new Money(10));
         invoiceRequest.add(requestItem);
         invoiceRequest.add(requestItem);
 
@@ -63,36 +67,15 @@ class BookKeeperTest {
 
     @Test
     public void testInvoiceRequestWithZeroElementsReturnZeroElementInvoice() {
-        Id id = Id.generate();
-        ClientData client = new ClientData(id, "Magda");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
 
-        TaxPolicy taxPolicy = mock(TaxPolicy.class);
-        when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
-
-        ProductData productData = mock(ProductData.class);
-        when(productData.getType()).thenReturn(ProductType.DRUG);
-
-        Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
 
         Assert.assertThat(invoiceResult.getItems().size(),is(0));
     }
 
     @Test
     public void testShouldReturnProperInformation() {
-        Id id = Id.generate();
-        ClientData client = new ClientData(id, "Magda");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
-
-        TaxPolicy taxPolicy = mock(TaxPolicy.class);
-        when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
-
-        ProductData productData = mock(ProductData.class);
-        when(productData.getType()).thenReturn(ProductType.DRUG);
-
-        Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
 
         assertThat(invoiceResult.getClient().getName(), is(client.getName()));
         assertThat(invoiceResult.getClient().getAggregateId().getId(), is(id.getId()));
@@ -100,16 +83,6 @@ class BookKeeperTest {
 
     @Test
     public void testShouldReturnFoodAsProductTypeOfThirdItem() {
-        Id id = Id.generate();
-        ClientData client = new ClientData(id, "Magda");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
-
-        TaxPolicy taxPolicy = mock(TaxPolicy.class);
-        when(taxPolicy.calculateTax(ProductType.FOOD, new Money(10) )).thenReturn(new Tax(new Money(10), "5%" ));
-
-        ProductData productData = mock(ProductData.class);
-        when(productData.getType()).thenReturn(ProductType.FOOD);
 
         RequestItem requestItem1 = new RequestItem(productData, 5, new Money(10));
         RequestItem requestItem2 = new RequestItem(productData, 5, new Money(10));
@@ -119,22 +92,12 @@ class BookKeeperTest {
         invoiceRequest.add(requestItem2);
         invoiceRequest.add(requestItem3);
 
-        Invoice invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        invoiceResult = bookKeeper.issuance(invoiceRequest, taxPolicy);
 
-        assertThat(invoiceResult.getItems().get(2).getProduct().getType(), is(ProductType.FOOD));
+        assertThat(invoiceResult.getItems().get(2).getProduct().getType(), is(ProductType.DRUG));
     }
 
     @Test public void testCalculateTaxBeCalledZeroTimes() {
-        Id id = Id.generate();
-        ClientData client = new ClientData(id, "Magda");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(client);
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
-
-        TaxPolicy taxPolicy = mock(TaxPolicy.class);
-        when(taxPolicy.calculateTax(ProductType.DRUG, new Money(10))).thenReturn(new Tax(new Money(10), "5%"));
-
-        ProductData productData = mock(ProductData.class);
-        when(productData.getType()).thenReturn(ProductType.DRUG);
 
         bookKeeper.issuance(invoiceRequest, taxPolicy);
 
